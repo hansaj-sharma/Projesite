@@ -12,6 +12,7 @@ import Project from './pages/project/Project'
 import './App.css'
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import OnlineUsers from './components/OnlineUsers';
 
 function App() {
 
@@ -32,6 +33,7 @@ function App() {
               <Route path='/project/:id' element={<Project />} />
             </Routes>
           </div>
+          {user && <OnlineUsers />}
         </BrowserRouter>
       )}
     </div >
