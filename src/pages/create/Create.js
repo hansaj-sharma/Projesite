@@ -4,6 +4,10 @@ import './Create.css'
 import { useEffect, useState } from 'react'
 import Select from 'react-select'
 import { useCollection } from '../../hooks/useCollection'
+import { timestamp } from '../../firebase/config'
+import { useAuthContext } from '../../hooks/useAuthContext'
+import { useFirestore } from '../../hooks/useFirestore'
+import { useNavigate } from 'react-router-dom'
 
 const categories = [
     { value: 'development', label: 'Development' },
@@ -20,7 +24,10 @@ export default function Create() {
     const [assignedUsers, setAssignedUsers] = useState([])
     const [formError, setFormError] = useState(null)
     const { documents } = useCollection('users')
+    const { user } = useAuthContext()
     const [users, setUsers] = useState([])
+    const { addDocument, response } = useFirestore('projects')
+    const navigate = useNavigate()
 
     useEffect(() => {
         if (documents) {
@@ -44,8 +51,36 @@ export default function Create() {
             setFormError('please assign project ro atleast one user')
             return
         }
+        // crated by
+        const createdBy = {
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+            id: user.uid
+            // uid in firebase object 
+        }
+        // assigned users
+        const assignedUsersList = assignedUsers.map((u) => {
+            return {
+                displayname: u.value.displayName,
+                photoUrl: u.value.photoURL,
+                id: u.value.id
+            }
+        })
+        // project object 
+        const project = {
+            name,
+            details,
+            category: category.value,
+            dueDate: timestamp.fromDate(new Date(dueDate)),
+            comment: [],
+            createdBy,
+            assignedUsersList
+        }
 
-        console.log(category, dueDate, assignedUsers)
+        await addDocument(project)
+        if (!response.error) {
+            navigate('/')
+        }
     }
     return (
         <div className="create-form">
